@@ -11,7 +11,6 @@
 var LIFF_ID      = '2009742652-bMOnrVuO';
 var GAS_URL      = 'https://script.google.com/macros/s/AKfycbxy2BLug14m46zThWHshfZKWm9DY5QZS7kZONczWe8zg-_Jowa0e8XueLP5tl7VIWYA/exec';
 var LINE_ADD_URL = 'https://line.me/R/ti/p/@040yvgca';
-var SECRET       = 'dfhru947947rdHDGndsehseijiJO';
 
 (async function() {
   try {
@@ -27,7 +26,6 @@ var SECRET       = 'dfhru947947rdHDGndsehseijiJO';
     var profile = null;
     try { profile = await liff.getProfile(); } catch(e) {}
     var payload = {
-      secret:       SECRET,
       fbc:          fbc,
       fbp:          fbp,
       event_id:     eventId || ('ev-' + Date.now()),
