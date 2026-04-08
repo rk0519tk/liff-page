@@ -3,21 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LINEで受け取る</title>
+  <title>Loading...</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
 <script>
-// ==============================
-// ここを書き換えてください（3箇所）
-// ==============================
-var LIFF_ID       = 'ここにLIFF ID';          // 例: 1234567890-XXXXXXXX
-var GAS_URL       = 'ここにGASのURL';          // STEP1で取得したURL
-var LINE_ADD_URL  = 'https://line.me/R/ti/p/@ここにLINEのID'; // 例: @abc1234
+// ===== ここだけ書き換えてください（3箇所）=====
+var LIFF_ID      = '2009742652-bMOnrVuO';
+var GAS_URL      = 'https://script.google.com/macros/s/AKfycbxzDThcqnaYettIM198RlIc_4ZNW4yCDc2wBbVmUTmQmGWTRxOzKwVG4DNV-yRjIFr2/exec';
+var LINE_ADD_URL = 'https://line.me/R/ti/p/@040yvgca';
+var SECRET       = 'dfhru947947rdHDGndsehseijiJO';
+// ===============================================
 
-// ==============================
-// 以下は触らなくてOK
-// ==============================
 (async function() {
   try {
     await liff.init({ liffId: LIFF_ID });
@@ -36,33 +33,32 @@ var LINE_ADD_URL  = 'https://line.me/R/ti/p/@ここにLINEのID'; // 例: @abc12
     try { profile = await liff.getProfile(); } catch(e) {}
 
     var payload = {
-      secret:       'dfhru947947rdHDGndsehseijiJO', // ← WEBHOOK_SECRETと同じ値
+      secret:       SECRET,
       fbc:          fbc,
       fbp:          fbp,
       event_id:     eventId || ('ev-' + Date.now()),
       event_time:   Math.floor(Date.now() / 1000),
       line_user_id: profile ? profile.userId : null,
       user_agent:   navigator.userAgent,
-      source_url:   document.referrer || window.location.href
+      source_url:   document.referrer || ''
     };
 
-    // GASへ送信（裏で実行。失敗してもLINEへ遷移は止めない）
     fetch(GAS_URL, {
-      method: 'POST',
-      mode:   'no-cors',
+      method:  'POST',
+      mode:    'no-cors',
       headers: { 'Content-Type': 'application/json' },
-      body:   JSON.stringify(payload)
+      body:    JSON.stringify(payload)
     }).catch(function(){});
 
-    // LINE友だち追加URLへ遷移
-    if (liff.isInClient()) {
-      liff.openWindow({ url: LINE_ADD_URL, external: false });
-    } else {
-      window.location.href = LINE_ADD_URL;
-    }
+    setTimeout(function() {
+      if (liff.isInClient()) {
+        liff.openWindow({ url: LINE_ADD_URL, external: false });
+      } else {
+        window.location.href = LINE_ADD_URL;
+      }
+    }, 500);
 
   } catch(err) {
-    // エラーが起きてもLINEへ飛ばす（ユーザーを止めない）
     window.location.href = LINE_ADD_URL;
   }
 })();
