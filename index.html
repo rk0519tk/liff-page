@@ -8,32 +8,24 @@
 </head>
 <body>
 <script>
-// ===== ここだけ書き換えてください（3箇所）=====
 var LIFF_ID      = '2009742652-bMOnrVuO';
 var GAS_URL      = 'https://script.google.com/macros/s/AKfycbxy2BLug14m46zThWHshfZKWm9DY5QZS7kZONczWe8zg-_Jowa0e8XueLP5tl7VIWYA/exec';
 var LINE_ADD_URL = 'https://line.me/R/ti/p/@040yvgca';
-var SECRET       = 'dfhru947947rdHDGndsehseijiJO';
-// ===============================================
 
 (async function() {
   try {
     await liff.init({ liffId: LIFF_ID });
-
     if (!liff.isLoggedIn()) {
       liff.login({ redirectUri: window.location.href });
       return;
     }
-
     var params  = new URLSearchParams(window.location.search);
     var fbc     = params.get('fbc');
     var fbp     = params.get('fbp');
     var eventId = params.get('event_id');
-
     var profile = null;
     try { profile = await liff.getProfile(); } catch(e) {}
-
     var payload = {
-      secret:       SECRET,
       fbc:          fbc,
       fbp:          fbp,
       event_id:     eventId || ('ev-' + Date.now()),
@@ -43,23 +35,33 @@ var SECRET       = 'dfhru947947rdHDGndsehseijiJO';
       source_url:   document.referrer || ''
     };
 
-    fetch(GAS_URL, {
-      method:  'POST',
-      mode:    'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    }).catch(function(){});
+    // GASにPOSTしてから遷移（no-corsをやめてXMLHttpRequestで送信）
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', GAS_URL, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain');
+    xhr.onloadend = function() {
+      goToLine();
+    };
+    xhr.onerror = function() {
+      goToLine();
+    };
+    xhr.send(JSON.stringify(payload));
 
-    setTimeout(function() {
-      if (liff.isInClient()) {
-        liff.openWindow({ url: LINE_ADD_URL, external: false });
-      } else {
-        window.location.href = LINE_ADD_URL;
-      }
-    }, 500);
+    // 3秒経っても応答がなければ強制遷移
+    setTimeout(goToLine, 3000);
 
   } catch(err) {
-    window.location.href = LINE_ADD_URL;
+    goToLine();
+  }
+
+  function goToLine() {
+    if (typeof goToLine._done !== 'undefined') return;
+    goToLine._done = true;
+    if (liff.isInClient()) {
+      liff.openWindow({ url: LINE_ADD_URL, external: false });
+    } else {
+      window.location.href = LINE_ADD_URL;
+    }
   }
 })();
 </script>
