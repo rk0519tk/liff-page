@@ -23,6 +23,7 @@ var LINE_ADD_URL = 'https://line.me/R/ti/p/@040yvgca';
     var fbc     = params.get('fbc');
     var fbp     = params.get('fbp');
     var eventId = params.get('event_id');
+    var source  = params.get('source') || 'lp'; // ★追加
     var profile = null;
     try { profile = await liff.getProfile(); } catch(e) {}
     var payload = {
@@ -32,24 +33,16 @@ var LINE_ADD_URL = 'https://line.me/R/ti/p/@040yvgca';
       event_time:   Math.floor(Date.now() / 1000),
       line_user_id: profile ? profile.userId : null,
       user_agent:   navigator.userAgent,
-      source_url:   document.referrer || ''
+      source_url:   document.referrer || '',
+      source:       source  // ★追加
     };
-
-    // GASにPOSTしてから遷移（no-corsをやめてXMLHttpRequestで送信）
     var xhr = new XMLHttpRequest();
     xhr.open('POST', GAS_URL, true);
     xhr.setRequestHeader('Content-Type', 'text/plain');
-    xhr.onloadend = function() {
-      goToLine();
-    };
-    xhr.onerror = function() {
-      goToLine();
-    };
+    xhr.onloadend = function() { goToLine(); };
+    xhr.onerror   = function() { goToLine(); };
     xhr.send(JSON.stringify(payload));
-
-    // 3秒経っても応答がなければ強制遷移
     setTimeout(goToLine, 3000);
-
   } catch(err) {
     goToLine();
   }
